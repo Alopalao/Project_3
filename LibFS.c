@@ -114,6 +114,8 @@ static int check_magic()
   else return 0;
 }
 
+//Function that takes the argument (a binary number in a string) and outputs the
+//decimal number
 int Bi_ToDecimal(char* bi)
 {
     int binary = atoi(bi);
