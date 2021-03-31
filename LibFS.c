@@ -6,6 +6,8 @@
 #include "LibDisk.h"
 #include "LibFS.h"
 
+#include <math.h>
+
 // set to 1 to have detailed debug print-outs and 0 to have none
 #define FSDEBUG 0
 
@@ -72,7 +74,7 @@ typedef struct _inode {
 // blocks for the content of files and directories
 #define DATABLOCK_START_SECTOR (INODE_TABLE_START_SECTOR+INODE_TABLE_SECTORS)
 
-// other file related definitions
+// other file related definition++
 
 // max length of a path is 256 bytes (including the ending null)
 #define MAX_PATH 256
@@ -112,11 +114,70 @@ static int check_magic()
   else return 0;
 }
 
+int Bi_ToDecimal(char* bi)
+{
+    int binary = atoi(bi);
+    int result = 0;
+    int base = 1;
+    int i, aux;
+    while (binary > 0)
+    {
+        aux = binary % 10;
+        result = result + aux * base;
+        binary = binary / 10;
+        base = base * 2;
+    }
+    return result;
+}
+
 // initialize a bitmap with 'num' sectors starting from 'start'
 // sector; all bits should be set to zero except that the first
 // 'nbits' number of bits are set to one
 static void bitmap_init(int start, int num, int nbits)
 {
+    int sector_bits = SECTOR_SIZE*8;
+    int rest_bytes = 0;
+    int rest_bits = 0;
+    char bitmap[SECTOR_SIZE];
+    char bi[8];
+    //Initialize num sector from start
+  //start to nbits = 1, rest is 0
+    int i,q;
+    for (i = start; i < start+num; i++)
+    {
+        if (nbits > sector_bits) //Write a sector full of 1's
+        {
+            nbits -= sector_bits;
+            rest_bytes = SECTOR_SIZE;
+        }
+        else //A sector combined with rest_bytes 1's and the rest is zero
+        {
+            rest_bytes = nbits / 8;
+        }
+        for (q = 0; q < rest_bytes; q++)//Loop for sector full of 1's
+        {
+            bitmap[q] = (unsigned char)255;//Writing 1111111
+        }
+        rest_bits = rest_bytes % 8;//Getting the rest of 1's
+        if (rest_bits > 0)
+        {
+            rest_bytes++;
+            for (q = 7; q > -1; q--)//Creating a string representing a binary number of the rest of 1's
+            {
+                if (rest_bits > 0)
+                    bi[q] = '1';
+                else
+                    bi[q] = '0';
+                rest_bits--;
+            }
+            bitmap[rest_bytes - 1] = (unsigned char)Bi_ToDecimal(bi);//Writing a combination of 1's and 0's
+        }
+        for (q = rest_bytes; q < SECTOR_SIZE; q++)//0 to the rest of the sector
+        {
+            bitmap[q] = 0;//Writing 0's
+        }
+        Disk_Write(i, bitmap);
+    }
   /* YOUR CODE */
 }
 

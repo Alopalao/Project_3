@@ -3,7 +3,7 @@
 CC     = gcc
 OPTS   = -O -Wall 
 INCS   = 
-LIBS   = -R. -L. -lFS -lDisk
+LIBS   = -Wl,-rpath= -L. -lFS -lDisk
 SHLIBS = libDisk.so libFS.so
 
 SRCS   = main.c \
