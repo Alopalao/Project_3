@@ -180,7 +180,9 @@ static void bitmap_init(int start, int num, int nbits)
         }
         Disk_Write(i, bitmap);
     }
-  /* YOUR CODE */
+  /* YOUR CODE */  
+  //THIS FUNCTION IS COMPLETED AND IT WORKS FOR BOOTING
+  //PURPOSES (at least for the tests on simple-test.c)
 }
 
 // set the first unused bit from a bitmap of 'nbits' bits (flip the
@@ -188,8 +190,12 @@ static void bitmap_init(int start, int num, int nbits)
 // return -1 if the bitmap is already full (no more zeros)
 static int bitmap_first_unused(int start, int num, int nbits)
 {
+    //char bitmap[SECTOR_SIZE];
+    dprintf("nbits -> %d\n", nbits);
+    //Disk_Read(start, bitmap);
+
   /* YOUR CODE */
-  return -1;
+    return -1;
 }
 
 // reset the i-th bit of a bitmap with 'num' sectors starting from
