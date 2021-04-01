@@ -143,7 +143,6 @@ static void bitmap_init(int start, int num, int nbits)
     char bitmap[SECTOR_SIZE];
     char bi[8];
     //Initialize num sector from start
-  //start to nbits = 1, rest is 0
     int i,q;
     for (i = start; i < start+num; i++)
     {
