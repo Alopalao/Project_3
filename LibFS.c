@@ -121,7 +121,7 @@ int Bi_ToDecimal(char* bi)
     int binary = atoi(bi);
     int result = 0;
     int base = 1;
-    int i, aux;
+    int aux;
     while (binary > 0)
     {
         aux = binary % 10;
@@ -146,20 +146,27 @@ static void bitmap_init(int start, int num, int nbits)
     int i,q;
     for (i = start; i < start+num; i++)
     {
-        if (nbits > sector_bits) //Write a sector full of 1's
+        if (nbits == 0) //There is not bits to write
+        {
+            rest_bits = 0;
+            rest_bytes = 0;
+        }
+        if else(nbits > sector_bits) //Write a sector full of 1's
         {
             nbits -= sector_bits;
             rest_bytes = SECTOR_SIZE;
+            rest_bits = 0;
         }
         else //A sector combined with rest_bytes 1's and the rest is zero
         {
+            rest_bits = nbits % 8;//Getting the rest of 1's if any
             rest_bytes = nbits / 8;
+            nbits = 0;//Not left bits to write
         }
         for (q = 0; q < rest_bytes; q++)//Loop for sector full of 1's
         {
             bitmap[q] = (unsigned char)255;//Writing 1111111
         }
-        rest_bits = rest_bytes % 8;//Getting the rest of 1's
         if (rest_bits > 0)
         {
             rest_bytes++;
@@ -187,12 +194,16 @@ static void bitmap_init(int start, int num, int nbits)
 // set the first unused bit from a bitmap of 'nbits' bits (flip the
 // first zero appeared in the bitmap to one) and return its location;
 // return -1 if the bitmap is already full (no more zeros)
+//NBITS is the number of bytes. 
 static int bitmap_first_unused(int start, int num, int nbits)
 {
-    //char bitmap[SECTOR_SIZE];
-    dprintf("nbits -> %d\n", nbits);
-    //Disk_Read(start, bitmap);
-
+    char bitmap[SECTOR_SIZE];
+    int real_bits = nbits*8;
+    int i;
+    for (i = start; i < start+num; i++)
+    {
+        Disk_Read(i, bitmap);
+    }
   /* YOUR CODE */
     return -1;
 }
