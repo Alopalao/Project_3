@@ -227,8 +227,25 @@ static int bitmap_reset(int start, int num, int ibit)
 // should not be more than MAX_NAME-1 in length
 static int illegal_filename(char* name)
 {
+    int name_size = strlen(name);
+    if (name_size > (MAX_NAME - 1))
+    {
+        return 1;
+    }
+    int i;
+    for (i = 0; i < name_size; i++)//check each character in name
+    {
+        int ch = (int)name[i];
+        //  not upper case letters   not lower case letters       not numbers
+        if ((ch < 65 && ch > 90) && (ch < 97 && ch > 122) && (ch < 48 && ch > 57)
+            && (ch != 45) && (ch != 46) && (ch != 95))
+        //     not a dash,     dot and     underscore
+        {
+            return 1;//then is illegal
+        }
+    }
     /* YOUR CODE */
-    return 1;
+    return 0;
 }
 
 // return the child inode of the given file name 'fname' from the
@@ -729,7 +746,7 @@ int File_Seek(int fd, int offset)
     open_files[fd].pos = offset;//update location/position of the file
                                 //not sure if more steps are needed.
     /* YOUR CODE */
-    return offset;
+    return open_files[fd].pos;
 }
 
 int File_Close(int fd)
