@@ -170,7 +170,7 @@ static void bitmap_init(int start, int num, int nbits)
         if (rest_bits > 0)
         {
             rest_bytes++;
-            for (q = 7; q > -1; q--)//Creating a string representing a binary number of the rest of 1's
+            for (q = 0; q < 8; q++)//Creating a string representing a binary number of the rest of 1's
             {
                 if (rest_bits > 0)
                     bi[q] = '1';
@@ -186,7 +186,6 @@ static void bitmap_init(int start, int num, int nbits)
         }
         Disk_Write(i, bitmap);
     }
-    /* YOUR CODE */
     //THIS FUNCTION IS COMPLETED AND IT WORKS FOR BOOTING
     //PURPOSES (at least for the tests on simple-test.c)
 }
@@ -244,7 +243,6 @@ static int illegal_filename(char* name)
             return 1;//then is illegal
         }
     }
-    /* YOUR CODE */
     return 0;
 }
 
@@ -745,7 +743,6 @@ int File_Seek(int fd, int offset)
     }
     open_files[fd].pos = offset;//update location/position of the file
                                 //not sure if more steps are needed.
-    /* YOUR CODE */
     return open_files[fd].pos;
 }
 
