@@ -205,6 +205,7 @@ static int bitmap_first_unused(int start, int num, int nbits)
     int i;
     for (i = start; i < start + num; i++)
     {
+
         Disk_Read(i, bitmap);
     }
     /* YOUR CODE */
@@ -214,8 +215,29 @@ static int bitmap_first_unused(int start, int num, int nbits)
 // reset the i-th bit of a bitmap with 'num' sectors starting from
 // 'start' sector; return 0 if successful, -1 otherwise
 static int bitmap_reset(int start, int num, int ibit)
+//What is that case when it should return -1 (unsuccessful reset)?
+//The i-th bit position is from the left to right or from rigth to left??
 {
-    //where is the ibit, is it in start sector? or in num sector?
+    //Because it says i-th bit, I am gonna assume it is talking about
+    //1st, 2nd, 3rd and not pos 0, pos 1, pos 2
+    int real_bit = ibit - 1;//1st is pos 0, 2nd is pos 1 and so on...
+    int bit_pos = real_bit % (SECTOR_SIZE * 8); //bit position in its sector
+    int bit_sector = (real_bit / (SECTOR_SIZE * 8)) + start;//sector where the bit is in
+    char* bitmap[SECTOR_SIZE];
+    if (bit_pos == 0)//Special case when the bit was in the last position of the previous sector
+    {
+        bit_sector -= 1;
+        bit_pos = SECTOR_SIZE * 8;
+    }
+    Disk_Read(bit_sector, bitmap);
+    int binary = bitmap[bit_pos/8];//bit_pos/8 to get the position of the byte
+    //if the i-th bit is counting positions from left to the right
+    //binary ^= 1UL << (bit_pos % 8);
+    //if the i-th bit is counting positions from rigth to the left
+    binary ^= 1UL << (7 - (bit_pos % 8));//bit_pos%8 to get the position of the bit in that byte
+
+    bitmap[bit_pos / 8] = binary;
+    Disk_Write(bit_sector, bitmap);
     /* YOUR CODE */
     return -1;
 }
