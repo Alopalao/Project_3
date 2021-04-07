@@ -509,6 +509,18 @@ int create_file_or_directory(int type, char* pathname)
 // -1 if general error, -2 if directory not empty, -3 if wrong type
 int remove_inode(int type, int parent_inode, int child_inode)
 {
+    if (type == 0)//It is a file
+    {
+
+    }
+    else if (type == 1)//It is a directory
+    {
+
+    }
+    else//Unknow type of file
+    {
+        return -3;
+    }
     /* YOUR CODE */
     return -1;
 }
@@ -764,7 +776,6 @@ int File_Seek(int fd, int offset)
         return -1;
     }
     open_files[fd].pos = offset;//update location/position of the file
-                                //not sure if more steps are needed.
     return open_files[fd].pos;
 }
 
@@ -796,6 +807,7 @@ int Dir_Create(char* path)
 int Dir_Unlink(char* path)
 {
     /* YOUR CODE */
+
     return -1;
 }
 
