@@ -806,9 +806,30 @@ int Dir_Create(char* path)
 
 int Dir_Unlink(char* path)
 {
+    if (path == NULL)//Empty path error
+    {
+        osErrno = E_GENERAL;
+        return -1;
+    }
+    else if (strcmp(path, "/") == 0)//Cannot unlink the root
+    {
+        osErrno = E_ROOT_DIR;
+        return -1;
+    }
+    int child_inode;
+    //Getting the parent_inode and child_inode
+    int parent_inode = follow_path(path, &child_inode, NULL);
+    char inode_buffer[SECTOR_SIZE];
+    if (parent_inode < 0)//Directory not found
+    {
+        osErrno = E_NO_SUCH_DIR;
+        return -1;
+    }
+    //Remove_inode() function takes care of -1 general error, -2 directory is not
+    //empty and -3 wrong type. It return 0 in a succesful case
+    int remove = remove_inode(1, parent_inode, child_inode);
+    return remove;
     /* YOUR CODE */
-
-    return -1;
 }
 
 int Dir_Size(char* path)
