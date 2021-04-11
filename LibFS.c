@@ -754,19 +754,6 @@ int File_Open(char* file)
 int File_Read(int fd, void* buffer, int size)
 {
     open_file_t file = open_files[fd];
-    /* YOUR CODE */
-    if (is_file_open(file.inode) == 0) {
-        osErrno = E_BAD_FD;
-        return -1;
-    }
-    size_t readFIleSize = read(fd, buffer, size);
-    return readFIleSize;
-
-}
-
-int File_Write(int fd, void* buffer, int size)
-{
-    open_file_t file = open_files[fd];
     if (is_file_open(file.inode) <= 0) {
         osErrno = E_BAD_FD;
         return -1;
@@ -780,18 +767,108 @@ int File_Write(int fd, void* buffer, int size)
     int sector = INODE_TABLE_START_SECTOR + open_files[fd].inode/INODES_PER_SECTOR;
     char inode_buffer[sector];
     
-    //get current offset
-    int inode_str_entry = (sector-INODE_TABLE_START_SECTOR) * INODES_PER_SECTOR;
-    int offset = open_files[fd].inode-inode_str_entry;
+    //get current inode
+    int inode_str = (sector-INODE_TABLE_START_SECTOR) * INODES_PER_SECTOR;
+    int offset = open_files[fd].inode-inode_str;
 
     inode_t* inode = (inode_t*)(inode_buffer+offset+sizeof(inode_t));
 
+    //get the start and end of how much to read
+    int pointerG = open_files[fd].pos/sector;
+    int startPointer = pointerG*sector;
+    int endPOinter = startPointer+sector;
+    if (endPOinter > inode->size) {
+        endPOinter=inode->size;
+    }
+    if (endPOinter < open_files[fd].pos+size){
+        size = endPOinter-open_files[fd].pos;
+    }
+    offset = open_files[fd].pos-startPointer;
+
+
+    //read content of file size
     char data[SECTOR_SIZE];
     memcpy(buffer, &data[offset], size);
 
     open_files[fd].pos += size;
     return size;
     
+
+}
+
+int File_Write(int fd, void* buffer, int size)
+{
+    open_file_t file = open_files[fd];
+    if (is_file_open(file.inode) <= 0) {
+        osErrno = E_BAD_FD;
+        return -1;
+    }
+
+    int sector = INODE_TABLE_START_SECTOR + open_files[fd].inode/INODES_PER_SECTOR;
+    char inode_buffer[sector];
+
+    //get the file using inode
+    //get current offset
+    int inode_str = (sector-INODE_TABLE_START_SECTOR) * INODES_PER_SECTOR;
+    int offset = open_files[fd].inode-inode_str;
+
+    inode_t* inode = (inode_t*)(inode_buffer+offset+sizeof(inode_t));
+
+    int index = 0;
+    int gap = size;
+
+    while(gap > 0) {
+        int pointerID = open_files[fd].pos/sector;
+        if (pointerID == MAX_SECTORS_PER_FILE) {
+            osErrno = E_FILE_TOO_BIG;
+            return -1;
+        }
+        int start_index = pointerID*sector;
+
+        int end_index = start_index+sector;
+        if (end_index < open_files[fd].pos + size) {
+            size = end_index-open_files[fd].pos;
+        }
+
+        offset = open_files[fd].pos-start_index;
+
+        char data[sector];
+        if (start_index < open_files[fd].size) {
+            if (Disk_Read(inode->data[pointerID], data) < 0) {
+                osErrno = E_GENERAL;
+                return -1;
+            }else {
+                //allocate a new sector
+                int new_sector = bitmap_first_unused(SECTOR_BITMAP_START_SECTOR, SECTOR_BITMAP_SECTORS, SECTOR_BITMAP_SIZE);
+                if (new_sector < 0) {
+                    osErrno = E_NO_SPACE;
+                    return -1;
+                }
+
+                inode->data[pointerID] = new_sector;
+                memset(data, 0, SECTOR_SIZE);
+
+                //write and copy data using pointers
+                memcpy(&data[offset], &buffer[pointerID], size);
+                open_files[fd].pos += size;
+                pointerID += size;
+                gap -= size;
+                size = gap;
+                printf("size:%d\n, position:%d", size, open_files[fd].pos);
+
+                if (Disk_Write(inode->data[pointerID], data) < 0) {
+                    osErrno = E_GENERAL;
+                    return -1;
+                }
+            }
+            if (open_files[fd].pos > open_files[fd].size) {
+                open_files[fd].size = inode->size = open_files[fd].pos;
+            }
+
+            return pointerID;
+        }
+    }
+
 }
 
 int File_Seek(int fd, int offset)
