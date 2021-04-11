@@ -822,21 +822,7 @@ int File_Seek(int fd, int offset)
 
 int File_Close(int fd)
 {
-    dprintf("File_Close(%d):\n", fd);
-    if (0 > fd || fd > MAX_OPEN_FILES) {
-        dprintf("... fd=%d out of bound\n", fd);
-        osErrno = E_BAD_FD;
-        return -1;
-    }
-    if (open_files[fd].inode <= 0) {
-        dprintf("... fd=%d not an open file\n", fd);
-        osErrno = E_BAD_FD;
-        return -1;
-    }
-
-    dprintf("... file closed successfully\n");
-    open_files[fd].inode = 0;
-    return 0;
+    /*YOUR CODE*/
 }
 
 int Dir_Create(char* path)
@@ -950,27 +936,22 @@ int Dir_Read(char* path, void* buffer, int size)
         osErrno = E_BUFFER_TOO_SMALL;
         return -1;
     }
-    //Quantity of sectors full
-    int full_sector = child->size / DIRENTS_PER_SECTOR;
-    //Quantity of sector not full if any
-    int part_sector = child->size % DIRENTS_PER_SECTOR;
-    int i;
-    int entries = child->size;
-    for (i = 0; i < entries; i++)
+    int entries = child->size;//Number of directory entries
+    int index;//index of the buffer
+    int i;//index of the inode_buffer
+    while(entries > 0)
     {
         char inode_buffer[SECTOR_SIZE];
         Disk_Read(child->data[i], inode_buffer);
-
-    }
-    for (i = 0; i < full_sector; i++)
-    {
-        Disk_Read((unsigned char)child->data[i], (char*)buffer + i * SECTOR_SIZE);
-    }
-    if (part_sector > 0)
-    {
-        char aux[SECTOR_SIZE];
-        Disk_Read((unsigned char)child->data[i], aux);
-        strncpy((char*)buffer + full_sector * SECTOR_SIZE, aux, part_sector * sizeof(dirent_t))
+        int copy = DIRENTS_PER_SECTOR;
+        if (DIRENTS_PER_SECTOR > entries)
+        {
+            copy = entries;
+        }
+        memcpy(&buffer[index], inode_buffer, copy * sizeof(dirent_t));
+        entries -= copy;
+        i += 1;
+        index += copy * sizeof(dirent_t);
     }
     ///* YOUR CODE */
     return child->size;
