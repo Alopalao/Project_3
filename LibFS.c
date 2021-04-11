@@ -753,14 +753,45 @@ int File_Open(char* file)
 
 int File_Read(int fd, void* buffer, int size)
 {
+    open_file_t file = open_files[fd];
     /* YOUR CODE */
-    return -1;
+    if (is_file_open(file.inode) == 0) {
+        osErrno = E_BAD_FD;
+        return -1;
+    }
+    size_t readFIleSize = read(fd, buffer, size);
+    return readFIleSize;
+
 }
 
 int File_Write(int fd, void* buffer, int size)
 {
-    /* YOUR CODE */
-    return -1;
+    open_file_t file = open_files[fd];
+    if (is_file_open(file.inode) <= 0) {
+        osErrno = E_BAD_FD;
+        return -1;
+    }
+
+    if (file.pos == open_files[fd].size || size == 0) {
+        return 0;
+    }
+
+
+    int sector = INODE_TABLE_START_SECTOR + open_files[fd].inode/INODES_PER_SECTOR;
+    char inode_buffer[sector];
+    
+    //get current offset
+    int inode_str_entry = (sector-INODE_TABLE_START_SECTOR) * INODES_PER_SECTOR;
+    int offset = open_files[fd].inode-inode_str_entry;
+
+    inode_t* inode = (inode_t*)(inode_buffer+offset+sizeof(inode_t));
+
+    char data[SECTOR_SIZE];
+    memcpy(buffer, &data[offset], size);
+
+    open_files[fd].pos += size;
+    return size;
+    
 }
 
 int File_Seek(int fd, int offset)
