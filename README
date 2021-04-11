@@ -1,18 +1,17 @@
-This directory contains a partial implementation of the simple file
-system for project 4. The partial implementation is in
-LibFS.c; it's heavily commented code so hopefully the implementation
-is self-explanatory. The places marked as YOUR CODE are to be filled
-in by your implementation.
+1. While in console go to the folder that contains the project files
+2. Type "make" to create the executable files
+3. Type "./name_of_test.exe File_System" to run a test. For example "./simple-test test"
+LIST OF TESTS:
+-Simple test: ./simple-test.exe test
+-List files: ./slow-ls.exe test /
+-Toucn files: ./slow-touch.exe test /new-file
+-Import a file to "test": ./slow-import.exe test /new-file salute.txt
+-Read file: ./slow-cat.exe test /new-file
+-Export a file from "test": ./slow-export.exe test /new-file empty.txt
+-Delete file: ./slow-rm.exe test /new-file
+-Create directory: ./slow-mkdir.exe test /new-folder
+-Delete directory: ./slow-rmdir.exe test /new-folder
 
-NOTE THAT THE IMPLEMENTATION PROVIDED HERE IS PURELY DESIGNED TO HELP
-YOU COMPLETE THE TASK. YOU DO NOT HAVE TO FOLLOW THE IMPLEMENTATION.
-BUT IF YOU DO, PAY ATTENTION TO THE DETAILS. THERE IS NOT GUARANTEE
-THAT THE PROVIDED PARTIAL IMPLEMENTATION IS BUG-FREE CODE OR CONSIDERS
-ALL POSSIBLE SCENARIOS.
 
-The directory also contains a number of test applications implmement
-file system commands, including ls, mkdir, cat, rm, rmdir. The touch
-command is to create an empty file. The import and export commands
-used for copying a unix file into and out from our simple file system.
 
-Enjoy coding!
+
